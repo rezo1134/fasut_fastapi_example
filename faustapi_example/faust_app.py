@@ -50,21 +50,35 @@ talking_topic = app.topic(
     value_type=Person
 )
 
-def watch_person(person: Person):
+walking_topic = app.topic(
+    "people-walking",
+    key_type=str,
+    value_type=Person
+)
+
+def people_talking(person: Person):
     #logger.info("processing Person")
     diff_person = person
-    diff_person.walk()
     diff_person.talk()
     return diff_person
 
+def people_walking(person: Person):
+    #logger.info("processing Person")
+    diff_person = person
+    diff_person.walk()
+    return diff_person
 
 @app.task
-async def peoplewatcher():
+async def peopletalker():
     async for person in people_topic.stream():
         #logger.info(f"Checked {person}")
-        await talking_topic.send(value=watch_person(person), key="name")
+        await talking_topic.send(value=people_talking(person), key=person["name"])
 
-
+@app.task
+async def peoplewalker():
+    async for person in talking_topic.stream():
+        #logger.info(f"Checked {person}")
+        await walking_topic.send(value=people_walking(person), key=person["name"])
 
 if __name__ == '__main__':
     app.main()
