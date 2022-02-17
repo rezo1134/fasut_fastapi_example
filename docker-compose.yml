@@ -1,0 +1,32 @@
+version: "3.7"
+
+services:
+  fastapi:
+    image: wilt_fastapi:0.0.1
+    container_name: fastapi
+    command: ["uvicorn", "app:app","--reload", "--host", "0.0.0.0", "--port", "8000"]
+    volumes:
+      - E:\wiltlab\docker_dev\fastapi\faustapi_example\fastapi_app.py:/code/app.py
+      - E:\wiltlab\docker_dev\fastapi\faustapi_example\faustmodels.py:/code/faustmodels.py
+      
+    networks:
+      - wilt-net
+    labels:
+      traefik.enable: true
+      traefik.http.services.fastapi.loadbalancer.server.port: "8000"
+      traefik.http.routers.fastapi.rule: Host(`fastapi.localhost`)
+  
+  faustapp: 
+    image: wilt_fastapi:0.0.1
+    container_name: faustapp
+    command: [faust, -A, app, worker, -l, info]
+    volumes:
+      - E:\wiltlab\docker_dev\fastapi\faustapi_example\faust_app.py:/code/app.py
+      - E:\wiltlab\docker_dev\fastapi\faustapi_example\faustmodels.py:/code/faustmodels.py
+    networks:
+      - wilt-net
+
+
+networks:
+  wilt-net:
+    external: true
